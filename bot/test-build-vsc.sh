@@ -22,7 +22,7 @@
 set -e
 
 
-echo_green "All set, let's start installing some software with EasyBuild Dev in ${EASYBUILD_INSTALLPATH}
+echo_green "All set, let's start installing some software with EasyBuild Dev in ${EASYBUILD_INSTALLPATH}"
 
 for es in $(ls vsc-*.yml); do
   echo ${es}
