@@ -43,7 +43,7 @@ for es in $(ls vsc-*.yml); do
     else
         fatal_error "Easystack file ${es} not found!"
     fi
-    check_missing_instammations.sh ${es}
+    ./check_missing_instammations.sh ${es}
 done
 
 echo ">> Cleaning up ${TMPDIR}..."
