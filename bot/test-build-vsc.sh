@@ -32,8 +32,9 @@ for es in $(ls vsc-*.yml); do
     if [ -f ${es} ]; then
         echo_green "checking easybuild version"
         module purge
+        #export PATH=$HOME/.local/bin:$PATH
         #export PYTHONPATH=$HOME/.local/lib/python3.8/site-packages/:$PYTHONPATH
-        #export EB_PYTHON=python3.8
+        export EB_PYTHON=python3.6
         #echo "using local pip install of easybuild with python3.8"
         ${EB} --version
 
