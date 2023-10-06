@@ -25,6 +25,7 @@ set -e
 source scripts/utils.sh
 
 EB='eb --detect-loaded-modules=purge --experimental'
+env | grep EASYBUILD
 
 echo_green "All set, let's start installing some software with EasyBuild Dev in ${EASYBUILD_INSTALLPATH}..."
 
@@ -43,7 +44,7 @@ for es in $(ls vsc-*.yml); do
     else
         fatal_error "Easystack file ${es} not found!"
     fi
-    ./check_missing_installations.sh ${es}
+    #./check_missing_installations.sh ${es}
 done
 
 echo ">> Cleaning up ${TMPDIR}..."
