@@ -30,7 +30,7 @@ echo_green "All set, let's start installing some software with EasyBuild Dev in 
 
 for es in $(ls vsc-*.yml); do
     if [ -f ${es} ]; then
-        echo_green "checking easybuild version
+        echo_green "checking easybuild version"
         export PATH=$HOME/.local/bin:$PATH
         export PYTHONPATH=$HOME/.local/lib/python3.8/site-packages/:$PYTHONPATH
         echo "using local pip install of easybuild with python3.8"
