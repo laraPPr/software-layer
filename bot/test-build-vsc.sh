@@ -24,23 +24,21 @@ set -e
 # source utils.sh
 source scripts/utils.sh
 
-EB='eb'
+EB='eb --detect-loaded-modules=purge --experimental'
 
 echo_green "All set, let's start installing some software with EasyBuild Dev in ${EASYBUILD_INSTALLPATH}..."
 
 for es in $(ls vsc-*.yml); do
     if [ -f ${es} ]; then
-        echo_green "checking easybuild version"
-        module purge
-        #export PATH=$HOME/.local/bin:$PATH
-        #export PYTHONPATH=$HOME/.local/lib/python3.8/site-packages/:$PYTHONPATH
-        export EB_PYTHON=python3.6
-        #echo "using local pip install of easybuild with python3.8"
+        echo_green "checking easybuild version
+        export PATH=$HOME/.local/bin:$PATH
+        export PYTHONPATH=$HOME/.local/lib/python3.8/site-packages/:$PYTHONPATH
+        echo "using local pip install of easybuild with python3.8"
         ${EB} --version
 
         echo_green "Feeding easystack file ${es} to EasyBuild..."
         ${EB} --easystack ${es} --robot
-        #ec=$?
+        ec=$?
 
     else
         fatal_error "Easystack file ${es} not found!"
