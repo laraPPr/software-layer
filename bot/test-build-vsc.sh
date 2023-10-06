@@ -30,6 +30,9 @@ echo_green "All set, let's start installing some software with EasyBuild Dev in 
 
 for es in $(ls vsc-*.yml); do
     if [ -f ${es} ]; then
+        echo_green "checking easybuild version"
+        ${EB} --version
+
         echo_green "Feeding easystack file ${es} to EasyBuild..."
         ${EB} --easystack ${es} --robot
         #ec=$?
