@@ -340,10 +340,22 @@ CoDeList=${CoDeList}$(add_detail ${NO_MISSING} 1 "${success_msg}" "${failure_msg
 
 comment_details="${comment_details_fmt/__DETAILS_LIST__/${CoDeList}}"
 
+# now put all pieces together creating comment_details from comment_template
+comment_description=${comment_template/__SUMMARY_FMT__/${comment_summary}}
+comment_description=${comment_description/__DETAILS_FMT__/${comment_details}}
 
-# first construct comment_artefacts_list, abbreviated CoArList
-# then use it to set comment_artefacts
-CoArList=""
+echo "${comment_description}" >> ${job_result_file}
+
+# add overall result: SUCCESS, FAILURE, UNKNOWN + artefacts
+# - this should make use of subsequent steps such as deploying a tarball more
+#   efficient
+echo "status = ${status}" >> ${job_result_file}
+
+# remove tmpfile
+if [[ -f ${tmpfile} ]]; then
+    rm ${tmpfile}
+fi
+
 
 # create a module avail command with only the new softwares in the easystack
 
