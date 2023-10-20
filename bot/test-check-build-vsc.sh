@@ -157,7 +157,7 @@ if [[ ${SLURM} -eq 1 ]] && \
    [[ ${ERROR} -eq 0 ]] && \
    [[ ${FAILED} -eq 0 ]] && \
    [[ ${MISSING} -eq 0 ]] && \
-   [[ ${NO_MISSING} -eq 1 ]] && \; then
+   [[ ${NO_MISSING} -eq 1 ]]; then
     # SUCCESS
     status="SUCCESS"
     summary=":grin: SUCCESS"
