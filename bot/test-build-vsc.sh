@@ -29,10 +29,6 @@ EB='eb --detect-loaded-modules=purge'
 
 echo_green "All set, let's start installing some software with EasyBuild Dev in ${EASYBUILD_INSTALLPATH}..."
 
-env | grep EASYBUILD
-env | grep SLURM
-env | grep VSC
-
 ${EB} --show-config
 
 for es in $(ls vsc-*.yml); do
