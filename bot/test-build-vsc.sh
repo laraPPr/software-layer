@@ -25,7 +25,7 @@ set -e
 source scripts/utils.sh
 source configure_easybuild
 
-EB='eb --detect-loaded-modules=purge --experimental'
+EB='eb --detect-loaded-modules=purge'
 
 echo_green "All set, let's start installing some software with EasyBuild Dev in ${EASYBUILD_INSTALLPATH}..."
 
