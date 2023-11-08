@@ -23,6 +23,7 @@ set -e
 
 # source utils.sh
 source scripts/utils.sh
+source configure_easybuild
 
 EB='eb --detect-loaded-modules=purge --experimental'
 
@@ -30,6 +31,8 @@ echo_green "All set, let's start installing some software with EasyBuild Dev in 
 
 env | grep EASYBUILD
 env | grep SLURM
+
+${EB} --show-config
 
 for es in $(ls vsc-*.yml); do
     if [ -f ${es} ]; then
