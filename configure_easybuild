@@ -1,5 +1,16 @@
 export EASYBUILD_SOURCEPATH=$VSC_DATA/easybuild/sources:/apps/gent/source
-export EASYBUILD_INSTALLPATH=$VSC_DATA/easybuild/$VSC_OS_LOCAL/$VSC_ARCH_LOCAL$VSC_ARCH_SUFFIX
+
+if [ $SLURM_JOB_PARTITION = skitty ]; then
+    export EASYBUILD_INSTALLPATH=$VSC_DATA/easybuild/$VSC_OS_LOCAL/skylake-ib
+elif [ $SLURM_JOB_PARTITION = donphan ]; then
+    export EASYBUILD_INSTALLPATH=$VSC_DATA/easybuild/$VSC_OS_LOCAL/cascadelake-ib
+elif [ $SLURM_JOB_PARTITION = accelgor ]; then
+    export EASYBUILD_INSTALLPATH=$VSC_DATA/easybuild/$VSC_OS_LOCAL/zen3-ampere-ib
+elif [ $SLURM_JOB_PARTITION = gallade ]; then
+    export EASYBUILD_INSTALLPATH=$VSC_DATA/easybuild/$VSC_OS_LOCAL/zen3x-ib
+else
+   export EASYBUILD_INSTALLPATH=$VSC_DATA/easybuild/$VSC_OS_LOCAL/$VSC_ARCH_LOCAL$VSC_ARCH_SUFFIX
+fi
 
 export EASYBUILD_DEBUG=1
 export EASYBUILD_TRACE=1
