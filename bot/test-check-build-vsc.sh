@@ -349,7 +349,7 @@ for diff in $(ls *.diff); do
             if [[ ${ec} == *'.eb' ]]; then 
                 name=$(echo ${ec} | cut -d '-' -f 2);
                 version=$(echo ${ec} | cut -d '-' -f 3);
-
+                module spider ${name}/${version}
                 result=$(module spider ${name}/${version});
             fi;
         fi; 
