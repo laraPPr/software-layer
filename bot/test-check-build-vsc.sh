@@ -358,7 +358,9 @@ done
 artefact_summary="<summary>$(print_code_item '__ITEM__' ${name}/${version})</summary>"
 
 CoArList=""
-CoArList="${CoArList}$(print_br_item2 ${result})"
+for line in ${result}; do
+    CoArList="${CoArList}$(print_br_item2 ${line})"
+done
 
 comment_artefacts_details="${comment_artefact_details_fmt/__ARTEFACT_SUMMARY__/${artefact_summary}}"
 comment_artefacts_details="${comment_artefacts_details/__ARTEFACT_DETAILS__/${CoArList}}"
