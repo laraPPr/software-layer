@@ -349,13 +349,14 @@ for diff in $(ls *.diff); do
             if [[ ${ec} == *'.eb' ]]; then 
                 name=$(echo ${ec} | cut -d '-' -f 2);
                 version=$(echo ${ec} | cut -d '-' -f 3);
-                result=$(module avail ${name}/${version};)
+
+                result=$(echo module spider ${name}/${version});
             fi;
         fi; 
     done;
 done
 
-artefact_summary="<summary>$(print_code_item '__ITEM__' ${name})</summary>"
+artefact_summary="<summary>$(print_code_item '__ITEM__' ${name}/${version})</summary>"
 
 CoArList=""
 CoArList="${CoArList}$(print_br_item2 ${result})"
