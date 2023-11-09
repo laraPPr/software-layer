@@ -1,2 +1,3 @@
 easyconfigs:
   - ACTC-1.1-GCCcore-11.3.0.eb
+  - ZIMPL-3.3.4-GCCcore-11.3.0.eb
