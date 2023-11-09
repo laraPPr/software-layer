@@ -20,6 +20,7 @@ LOCAL_TMPDIR=$(mktemp -d)
 
 EB='eb'
 
+source $TOPDIR/configure_easybuild
 source $TOPDIR/scripts/utils.sh
 
 echo ">> Checking for missing installations in ${EASYBUILD_INSTALLPATH}..."
