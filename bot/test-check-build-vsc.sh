@@ -340,9 +340,34 @@ CoDeList=${CoDeList}$(add_detail ${NO_MISSING} 1 "${success_msg}" "${failure_msg
 
 comment_details="${comment_details_fmt/__DETAILS_LIST__/${CoDeList}}"
 
+# check for the new software lines added to an easystack
+# and than execute a module avail 
+IFS=$'\n'
+for diff in $(ls *.diff); do
+    for ec in $(grep -A20 -e '+++ b/vsc-2022a.yml' ${diff} | tail -n+3); do 
+        if [[ ${ec} == +* ]]; then
+            if [[ ${ec} == *'.eb' ]]; then 
+                name=$(echo ${ec} | cut -d '-' -f 2);
+                version=$(echo ${ec} | cut -d '-' -f 3);
+                result=$(module avail ${name}/${version};)
+            fi;
+        fi; 
+    done;
+done
+
+artefact_summary="<summary>$(print_code_item '__ITEM__' ${name})</summary>"
+
+CoArList=""
+CoArList="${CoArList}$(print_br_item2 ${result})"
+
+comment_artefacts_details="${comment_artefact_details_fmt/__ARTEFACT_SUMMARY__/${artefact_summary}}"
+comment_artefacts_details="${comment_artefacts_details/__ARTEFACT_DETAILS__/${CoArList}}"
+comment_artefacts="${comment_artefacts_fmt/__ARTEFACTS_LIST__/${comment_artefacts_details}}"
+
 # now put all pieces together creating comment_details from comment_template
 comment_description=${comment_template/__SUMMARY_FMT__/${comment_summary}}
 comment_description=${comment_description/__DETAILS_FMT__/${comment_details}}
+comment_description=${comment_description/__ARTEFACTS_FMT__/${comment_artefacts}}
 
 echo "${comment_description}" >> ${job_result_file}
 
