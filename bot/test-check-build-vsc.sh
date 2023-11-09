@@ -350,7 +350,7 @@ for diff in $(ls *.diff); do
                 name=$(echo ${ec} | cut -d '-' -f 2);
                 version=$(echo ${ec} | cut -d '-' -f 3);
 
-                result=$(echo module spider ${name}/${version});
+                result=$(module spider ${name}/${version});
             fi;
         fi; 
     done;
