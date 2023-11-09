@@ -18,7 +18,7 @@ easystack=$1
 
 LOCAL_TMPDIR=$(mktemp -d)
 
-EB='eb --detect-loaded-modules=purge --experimental'
+EB='eb'
 
 source $TOPDIR/scripts/utils.sh
 
