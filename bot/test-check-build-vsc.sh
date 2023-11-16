@@ -21,14 +21,13 @@
 #    - no message FAILED
 #    - no message ' required modules missing:'
 #    - one or more of 'No missing installations'
-#    - message regarding created tarball
+#    - module is available on the system
 #  - FAILED (one of ... implemented as NOT SUCCESS)
 #    - no slurm-JOBID.out file
-#    - no tarball
 #    - message with ERROR
 #    - message with FAILED
 #    - message with ' required modules missing:'
-#    - no message regarding created tarball
+#    - No module was found
 
 # stop as soon as something fails
 # set -e
@@ -145,29 +144,12 @@ if [[ ${SLURM} -eq 1 ]]; then
   [[ ${VERBOSE} -ne 0 ]] && echo "${grep_out}"
 fi
 
-TGZ=-1
-TARBALL=
-if [[ ${SLURM} -eq 1 ]]; then
-  GP_tgz_created="\.tar\.gz created!"
-  grep_out=$(grep -v "^>> searching for " ${job_dir}/${job_out} | grep "${GP_tgz_created}" | sort -u)
-  if [[ $? -eq 0 ]]; then
-      TGZ=1
-      TARBALL=$(echo ${grep_out} | sed -e 's@^.*/\(eessi[^/ ]*\) .*$@\1@')
-  else
-      TGZ=0
-  fi
-  # have to be careful to not add searched for pattern into slurm out file
-  [[ ${VERBOSE} -ne 0 ]] && echo ">> searching for '"${GP_tgz_created}"'"
-  [[ ${VERBOSE} -ne 0 ]] && echo "${grep_out}"
-fi
-
 [[ ${VERBOSE} -ne 0 ]] && echo "SUMMARY: ${job_dir}/${job_out}"
 [[ ${VERBOSE} -ne 0 ]] && echo "  <test name>: <actual result> (<expected result>)"
 [[ ${VERBOSE} -ne 0 ]] && echo "  ERROR......: $([[ $ERROR -eq 1 ]] && echo 'yes' || echo 'no') (no)"
 [[ ${VERBOSE} -ne 0 ]] && echo "  FAILED.....: $([[ $FAILED -eq 1 ]] && echo 'yes' || echo 'no') (no)"
 [[ ${VERBOSE} -ne 0 ]] && echo "  REQ_MISSING: $([[ $MISSING -eq 1 ]] && echo 'yes' || echo 'no') (no)"
 [[ ${VERBOSE} -ne 0 ]] && echo "  NO_MISSING.: $([[ $NO_MISSING -eq 1 ]] && echo 'yes' || echo 'no') (yes)"
-[[ ${VERBOSE} -ne 0 ]] && echo "  TGZ_CREATED: $([[ $TGZ -eq 1 ]] && echo 'yes' || echo 'no') (yes)"
 
 job_result_file=_bot_job${SLURM_JOB_ID}.result
 
@@ -175,9 +157,7 @@ if [[ ${SLURM} -eq 1 ]] && \
    [[ ${ERROR} -eq 0 ]] && \
    [[ ${FAILED} -eq 0 ]] && \
    [[ ${MISSING} -eq 0 ]] && \
-   [[ ${NO_MISSING} -eq 1 ]] && \
-   [[ ${TGZ} -eq 1 ]] && \
-   [[ ! -z ${TARBALL} ]]; then
+   [[ ${NO_MISSING} -eq 1 ]]; then
     # SUCCESS
     status="SUCCESS"
     summary=":grin: SUCCESS"
@@ -245,9 +225,9 @@ fi
 #       :white_check_mark: found message(s) matching <code>No missing installations</code><br/>
 #       :white_check_mark: found message matching <code>tar.gz created!</code><br/>
 #     </dd>
-#     <dt>_Artefacts_</dt>
+#     <dt>_module avail check_</dt>
 #     <dd>
-#       No artefacts were created or found.
+#       Print the output of module avail name of the installed package.
 #     </dd>
 #   </dl>
 # </details>
@@ -358,111 +338,29 @@ success_msg="found message(s) matching <code>${GP_no_missing}</code>"
 failure_msg="no message matching <code>${GP_no_missing}</code>"
 CoDeList=${CoDeList}$(add_detail ${NO_MISSING} 1 "${success_msg}" "${failure_msg}")
 
-success_msg="found message matching <code>${GP_tgz_created}</code>"
-failure_msg="no message matching <code>${GP_tgz_created}</code>"
-CoDeList=${CoDeList}$(add_detail ${TGZ} 1 "${success_msg}" "${failure_msg}")
-
 comment_details="${comment_details_fmt/__DETAILS_LIST__/${CoDeList}}"
 
+# check for the new software lines added to an easystack
+# and than execute a module avail 
+IFS=$'\n'
+for diff in $(ls *.diff); do
+    for ec in $(grep -A20 -e '+++ b/vsc-2022a.yml' ${diff} | tail -n+3); do 
+        if [[ ${ec} == +* ]]; then
+            if [[ ${ec} == *'.eb' ]]; then 
+                name=$(echo ${ec} | cut -d '-' -f 2);
+                version=$(echo ${ec} | cut -d '-' -f 3);
+                result=$(module spider ${name:1}/${version});
+            fi;
+        fi; 
+    done;
+done
 
-# first construct comment_artefacts_list, abbreviated CoArList
-# then use it to set comment_artefacts
+artefact_summary="<summary>$(print_code_item '__ITEM__' ${name}/${version})</summary>"
+
 CoArList=""
-
-# TARBALL should only contain a single tarball
-if [[ ! -z ${TARBALL} ]]; then
-    # Example of the detailed information for a tarball. The actual result MUST be a
-    # single line (no '\n') or it would break the structure of the markdown table
-    # that holds status updates of a bot job.
-    # 
-    # <dd>
-    #   <details>
-    #     <summary><code>eessi-2023.06-software-linux-x86_64-generic-1682696567.tar.gz</code></summary>
-    #     size: 234 MiB (245366784 bytes)<br/>
-    #     entries: 1234<br/>
-    #     modules under _2023.06/software/linux/x86_64/intel/cascadelake/modules/all/_<br/>
-    #     <pre>
-    #       GCC/9.3.0.lua<br/>
-    #       GCC/10.3.0.lua<br/>
-    #       OpenSSL/1.1.lua
-    #     </pre>
-    #     software under _2023.06/software/linux/x86_64/intel/cascadelake/software/_
-    #     <pre>
-    #       GCC/9.3.0/<br/>
-    #       CMake/3.20.1-GCCcore-10.3.0/<br/>
-    #       OpenMPI/4.1.1-GCC-10.3.0/
-    #     </pre>
-    #     other under _2023.06/software/linux/x86_64/intel/cascadelake/_
-    #     <pre>
-    #       .lmod/cache/spiderT.lua<br/>
-    #       .lmod/cache/spiderT.luac_5.1<br/>
-    #       .lmod/cache/timestamp
-    #     </pre>
-    #   </details>
-    # </dd>
-    size="$(stat --dereference --printf=%s ${TARBALL})"
-    size_mib=$((${size} >> 20))
-    tmpfile=$(mktemp --tmpdir=. tarfiles.XXXX)
-    tar tf ${TARBALL} > ${tmpfile}
-    entries=$(cat ${tmpfile} | wc -l)
-    # determine prefix from job config: VERSION/software/OS_TYPE/CPU_FAMILY/ARCHITECTURE
-    # e.g., 2023.06/software/linux/x86_64/intel/skylake_avx512
-    # cfg/job.cfg contains (only the attributes to be used are shown below):
-    # [repository]
-    # repo_version = 2023.06
-    # [architecture]
-    # os_type = linux
-    # software_subdir = x86_64/intel/skylake_avx512
-    repo_version=$(cfg_get_value "repository" "repo_version")
-    os_type=$(cfg_get_value "architecture" "os_type")
-    software_subdir=$(cfg_get_value "architecture" "software_subdir")
-    prefix="${repo_version}/software/${os_type}/${software_subdir}"
-
-    # extract directories/entries from tarball content
-    modules_entries=$(grep "${prefix}/modules" ${tmpfile})
-    software_entries=$(grep "${prefix}/software" ${tmpfile})
-    other_entries=$(cat ${tmpfile} | grep -v "${prefix}/modules" | grep -v "${prefix}/software")
-    other_shortened=$(echo "${other_entries}" | sed -e "s@^.*${prefix}/@@" | sort -u)
-    modules=$(echo "${modules_entries}" | grep "/all/.*/.*lua$" | sed -e 's@^.*/\([^/]*/[^/]*.lua\)$@\1@' | sort -u)
-    software_pkgs=$(echo "${software_entries}" | sed -e "s@${prefix}/software/@@" | awk -F/ '{if (NR >= 2) {print $1 "/" $2}}' | sort -u)
-
-    artefact_summary="<summary>$(print_code_item '__ITEM__' ${TARBALL})</summary>"
-    CoArList=""
-    CoArList="${CoArList}$(print_br_item2 'size: __ITEM__ MiB (__ITEM2__ bytes)' ${size_mib} ${size})"
-    CoArList="${CoArList}$(print_br_item 'entries: __ITEM__' ${entries})"
-    CoArList="${CoArList}$(print_br_item 'modules under ___ITEM___' ${prefix}/modules/all)"
-    CoArList="${CoArList}<pre>"
-    if [[ ! -z ${modules} ]]; then
-        while IFS= read -r mod ; do
-            CoArList="${CoArList}$(print_br_item '<code>__ITEM__</code>' ${mod})"
-        done <<< "${modules}"
-    else
-        CoArList="${CoArList}$(print_br_item '__ITEM__' 'no module files in tarball')"
-    fi
-    CoArList="${CoArList}</pre>"
-    CoArList="${CoArList}$(print_br_item 'software under ___ITEM___' ${prefix}/software)"
-    CoArList="${CoArList}<pre>"
-    if [[ ! -z ${software_pkgs} ]]; then
-        while IFS= read -r sw_pkg ; do
-            CoArList="${CoArList}$(print_br_item '<code>__ITEM__</code>' ${sw_pkg})"
-        done <<< "${software_pkgs}"
-    else
-        CoArList="${CoArList}$(print_br_item '__ITEM__' 'no software packages in tarball')"
-    fi
-    CoArList="${CoArList}</pre>"
-    CoArList="${CoArList}$(print_br_item 'other under ___ITEM___' ${prefix})"
-    CoArList="${CoArList}<pre>"
-    if [[ ! -z ${other_shortened} ]]; then
-        while IFS= read -r other ; do
-            CoArList="${CoArList}$(print_br_item '<code>__ITEM__</code>' ${other})"
-        done <<< "${other_shortened}"
-    else
-        CoArList="${CoArList}$(print_br_item '__ITEM__' 'no other files in tarball')"
-    fi
-    CoArList="${CoArList}</pre>"
-else
-    CoArList="${CoArList}$(print_dd_item 'No artefacts were created or found.' '')"
-fi
+for line in ${result}; do
+    CoArList="${CoArList}$(print_br_item2 ${line})"
+done
 
 comment_artefacts_details="${comment_artefact_details_fmt/__ARTEFACT_SUMMARY__/${artefact_summary}}"
 comment_artefacts_details="${comment_artefacts_details/__ARTEFACT_DETAILS__/${CoArList}}"
@@ -479,13 +377,14 @@ echo "${comment_description}" >> ${job_result_file}
 # - this should make use of subsequent steps such as deploying a tarball more
 #   efficient
 echo "status = ${status}" >> ${job_result_file}
-echo "artefacts = " >> ${job_result_file}
-echo "${TARBALL}" | sed -e 's/^/    /g' >> ${job_result_file}
 
 # remove tmpfile
 if [[ -f ${tmpfile} ]]; then
     rm ${tmpfile}
 fi
+
+
+# create a module avail command with only the new softwares in the easystack
 
 # exit script with value that reflects overall job result: SUCCESS (0), FAILURE (1)
 test "${status}" == "SUCCESS"

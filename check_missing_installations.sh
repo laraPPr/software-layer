@@ -18,16 +18,17 @@ easystack=$1
 
 LOCAL_TMPDIR=$(mktemp -d)
 
-source $TOPDIR/scripts/utils.sh
+EB='eb'
 
 source $TOPDIR/configure_easybuild
+source $TOPDIR/scripts/utils.sh
 
 echo ">> Active EasyBuild configuration when checking for missing installations:"
 ${EB:-eb} --show-config
 
 echo ">> Checking for missing installations in ${EASYBUILD_INSTALLPATH}..."
 eb_missing_out=$LOCAL_TMPDIR/eb_missing.out
-${EB:-eb} --easystack ${easystack} --missing 2>&1 | tee ${eb_missing_out}
+${EB} --easystack ${easystack} --missing 2>&1 | tee ${eb_missing_out}
 exit_code=${PIPESTATUS[0]}
 
 ok_msg="Command 'eb --missing ...' succeeded, analysing output..."

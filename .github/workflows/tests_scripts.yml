@@ -3,23 +3,15 @@ name: Tests for scripts
 on:
   push:
     paths:
-      - build_container.sh
       - create_directory_tarballs.sh
-      - EESSI-pilot-install-software.sh
-      - install_software_layer.sh
       - load_easybuild_module.sh
-      - run_in_compat_layer_env.sh
       - scripts/utils.sh
       - update_lmod_cache.sh
 
   pull_request:
     paths:
-      - build_container.sh
       - create_directory_tarballs.sh
-      - EESSI-pilot-install-software.sh
-      - install_software_layer.sh
       - load_easybuild_module.sh
-      - run_in_compat_layer_env.sh
       - scripts/utils.sh
       - update_lmod_cache.sh
 permissions:
@@ -30,10 +22,6 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
-
-    - name: install Apptainer
-      run: |
-        ./install_apptainer_ubuntu.sh
 
     - name: test load_easybuild_module.sh script
       run: |
@@ -72,27 +60,6 @@ jobs:
 
           # run wrapper script + capture & check output
           out="${PWD}/eb-${EB_VERSION}.out"
-          ./eessi_container.sh --access rw --mode run --verbose /software-layer/run_in_compat_layer_env.sh /software-layer/eb-${EB_VERSION}.sh 2>&1 | tee ${out}
           pattern="^This is EasyBuild ${EB_VERSION} "
           grep "${pattern}" ${out} || (echo "Pattern '${pattern}' not found in output!" && exit 1)
         done
-
-    - name: test install_software_layer.sh script
-      run: |
-          # scripts need to be copied to /tmp,
-          # since install_software_layer.sh must be accessible from within build container
-          cp -a * /tmp/
-          cd /tmp
-          # force using x86_64/generic, to avoid triggering an installation from scratch
-          sed -i "s@./EESSI-pilot-install-software.sh@\"export EESSI_SOFTWARE_SUBDIR_OVERRIDE='x86_64/generic'; ./EESSI-pilot-install-software.sh\"@g" install_software_layer.sh
-          ./build_container.sh run /tmp/$USER/EESSI /tmp/install_software_layer.sh
-
-    - name: test create_directory_tarballs.sh script
-      run: |
-          # scripts need to be copied to /tmp,
-          # since create_directory_tarballs.sh must be accessible from within build container
-          cp -a * /tmp/
-          cd /tmp
-          ./build_container.sh run /tmp/$USER/EESSI /tmp/create_directory_tarballs.sh 2023.06
-          # check if tarballs have been produced
-          ls -l *.tar.gz
